@@ -1,28 +1,20 @@
 import React from 'react'
-import { Box, Typography, Paper, IconButton, Tooltip } from '@mui/material'
+import { Box, Typography, Paper, IconButton, Tooltip, Badge } from '@mui/material'
 import { Link } from 'react-router-dom'
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined'
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined'
+import LocalOfferIcon from '@mui/icons-material/LocalOffer'
 
-const Card = ({ book }) => {
-  // Default values if book prop is not provided
-  const defaultBook = {
-    id: 1,
-    title: 'Great Travel At Desert',
-    author: 'Sanchit Howdy',
-    price: 38.00,
-    image: 'https://example.com/book-cover.jpg',
-    link: '/books/1'
-  }
-
+const Card = ({ Books }) => {
+ 
   // Use provided book or default
-  const { id, title, author, price, image, link } = book || defaultBook
+  const { _id, Title, price, images, Language, discount  } = Books 
 
   // Handle add to cart
   const handleAddToCart = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log('Added to cart:', id)
+    console.log('Added to cart:', _id)
     // Add your cart logic here
   }
 
@@ -30,15 +22,15 @@ const Card = ({ book }) => {
   const handleAddToFavorites = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log('Added to favorites:', id)
+    console.log('Added to favorites:', _id)
     // Add your favorites logic here
   }
 
   return (
-    <Box 
-      component={Link} 
-      to={`/book-details/${id}`}
-      sx={{ 
+    <Box
+      component={Link}
+      to={`/book-details/${_id}`}
+      sx={{
         textDecoration: 'none',
         display: 'block',
         transition: 'transform 0.3s ease, box-shadow 0.3s ease',
@@ -49,9 +41,9 @@ const Card = ({ book }) => {
         position: 'relative'
       }}
     >
-      <Paper 
+      <Paper
         elevation={2}
-        sx={{ 
+        sx={{
           p: 2,
           display: 'flex',
           flexDirection: 'column',
@@ -62,8 +54,8 @@ const Card = ({ book }) => {
         }}
       >
         {/* Book Cover */}
-        <Box 
-          sx={{ 
+        <Box
+          sx={{
             width: '100%',
             height: 280,
             mb: 2,
@@ -75,8 +67,8 @@ const Card = ({ book }) => {
         >
           <Box
             component="img"
-            src={image}
-            alt={title}
+            src={images[0]}
+            alt={Title}
             sx={{
               height: '100%',
               objectFit: 'contain',
@@ -86,7 +78,27 @@ const Card = ({ book }) => {
               }
             }}
           />
-          
+
+          {/* Discount Badge */}
+          {discount > 0 && (
+            <Badge
+              badgeContent={`-${Math.round(((price - discount) / price) * 100)}%`}
+              color="error"
+              sx={{
+                position: 'absolute',
+                top: 20,
+                left: 10,
+                '& .MuiBadge-badge': {
+                  fontSize: '0.8rem',
+                  height: 'auto',
+                  padding: '5px'
+                }
+              }}
+            >
+              <LocalOfferIcon color="error" />
+            </Badge>
+          )}
+
           {/* Hover overlay with icons */}
           <Box
             sx={{
@@ -123,7 +135,7 @@ const Card = ({ book }) => {
                   <ShoppingCartOutlinedIcon />
                 </IconButton>
               </Tooltip>
-              
+
               <Tooltip title="Add to Favorites">
                 <IconButton
                   onClick={handleAddToFavorites}
@@ -143,12 +155,12 @@ const Card = ({ book }) => {
             </Box>
           </Box>
         </Box>
-        
+
         {/* Book Title */}
-        <Typography 
-          variant="h6" 
+        <Typography
+          variant="h6"
           component="h3"
-          sx={{ 
+          sx={{
             color: '#0A3556',
             fontWeight: 600,
             textAlign: 'center',
@@ -160,32 +172,56 @@ const Card = ({ book }) => {
             WebkitBoxOrient: 'vertical'
           }}
         >
-          {title}
+          {Title}
         </Typography>
-        
+
         {/* Author */}
-        <Typography 
-          variant="body2" 
-          sx={{ 
+        <Typography
+          variant="body2"
+          sx={{
             color: '#6c757d',
             textAlign: 'center',
             mb: 1,
             fontStyle: 'italic'
           }}
         >
-          by {author}
         </Typography>
-        
+
+        {/* Language */}
+        <Typography
+          variant="body2"
+          sx={{
+            color: '#6c757d',
+            textAlign: 'center',
+            mb: 1
+          }}
+        >
+          Language: {Language}
+        </Typography>
+
         {/* Price */}
-        <Typography 
-          variant="subtitle1" 
-          sx={{ 
+        <Typography
+          variant="subtitle1"
+          sx={{
             color: '#f05545',
             fontWeight: 700,
             textAlign: 'center'
           }}
         >
-          ${price.toFixed(2)}
+          ${discount.toFixed(2)}
+          {discount > 0 && (
+            <Typography
+              variant="subtitle2"
+              component="span"
+              sx={{
+                color: '#6c757d',
+                textDecoration: 'line-through',
+                ml: 1
+              }}
+            >
+              ${price.toFixed(2)}
+            </Typography>
+          )}
         </Typography>
       </Paper>
     </Box>

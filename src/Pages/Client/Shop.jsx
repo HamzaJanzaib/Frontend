@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { Box, Container, Typography, Breadcrumbs, Link, Select, MenuItem, FormControl, Pagination } from '@mui/material'
+import { Box, Container, Typography, Breadcrumbs, Link, Select, MenuItem, FormControl, Pagination, CircularProgress } from '@mui/material'
 import { Link as RouterLink } from 'react-router-dom'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import FilterAside from '../../Components/Client/FilterAside'
 import Card from '../../Components/Client/Card'
+import axios from 'axios'
 
 const Shop = () => {
   // State for sorting and pagination
@@ -11,35 +12,35 @@ const Shop = () => {
   const [page, setPage] = useState(1)
   const [displayedBooks, setDisplayedBooks] = useState([])
   const productsPerPage = 6
-  
+
   // State for filters
   const [priceRange, setPriceRange] = useState([0, 5000])
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [selectedSubcategory, setSelectedSubcategory] = useState(null)
+  const [allBooks, setBook] = useState([])
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample books data
-  const allBooks = [
-    {
-      id: 1,
-      title: 'The Art of Programming',
-      author: 'John Smith',
-      price: 450.00,
-      image: 'https://book-point.com/wp-content/uploads/2025/04/c167e031376c1d23c71b405bf566a74c.png',
-      link: '/books/1',
-      category: 'Computer & Technology',
-      subcategory: 'Programming'
-    },
-    {
-      id: 2,
-      title: 'Business Strategy',
-      author: 'Emma Johnson',
-      price: 350.00,
-      image: 'https://book-point.com/wp-content/uploads/2025/04/abadc1b87f0a2bd940f7b9006edce905.png',
-      link: '/books/2',
-      category: 'NON-FICTION',
-      subcategory: 'Business & Finance'
-    }
-  ]
+  useEffect(() => {
+    const fetchBook = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:8080/api/v1/Books/GetAllBooks`);
+        if (response.data && response.data.data) {
+          setBook(response.data.data);
+        } else {
+          setError('Book data not found');
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching book:', error);
+        setError('Failed to fetch book. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    fetchBook();
+  }, []);
 
   // Handle price range filter
   const handlePriceRangeChange = (newRange) => {
@@ -56,49 +57,49 @@ const Shop = () => {
 
   // Filter, sort and paginate books
   useEffect(() => {
+    if (!allBooks) return;
+
     // First apply all filters
     let filteredBooks = allBooks.filter(book => {
       // Price filter
       const passesPrice = book.price >= priceRange[0] && book.price <= priceRange[1];
-      
+
       // Category filter
       let passesCategory = true;
       if (selectedCategory) {
         passesCategory = book.category === selectedCategory;
-        
+
         // Subcategory filter (only if category matches and subcategory is selected)
         if (passesCategory && selectedSubcategory) {
           passesCategory = book.subcategory === selectedSubcategory;
         }
       }
-      
+
       return passesPrice && passesCategory;
     });
-    
+
     // Then apply sorting
     if (sortBy === 'price-low') {
       filteredBooks.sort((a, b) => a.price - b.price);
     } else if (sortBy === 'price-high') {
       filteredBooks.sort((a, b) => b.price - a.price);
     } else if (sortBy === 'newest') {
-      // For demo purposes, we'll just use the original order
-      // No additional sorting needed
+      filteredBooks.sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate));
     } else if (sortBy === 'popularity') {
-      // For demo purposes, we'll just shuffle the books
-      filteredBooks = [...filteredBooks].sort(() => Math.random() - 0.5);
+      filteredBooks.sort((a, b) => b.popularity - a.popularity);
     }
-    
+
     // Apply pagination
     const indexOfLastBook = page * productsPerPage;
     const indexOfFirstBook = indexOfLastBook - productsPerPage;
     setDisplayedBooks(filteredBooks.slice(indexOfFirstBook, indexOfLastBook));
-    
+
   }, [sortBy, page, priceRange, selectedCategory, selectedSubcategory, allBooks, productsPerPage]);
 
   // Calculate total filtered books for pagination
-  const filteredBooks = allBooks.filter(book => {
+  const filteredBooks = allBooks ? allBooks.filter(book => {
     const passesPrice = book.price >= priceRange[0] && book.price <= priceRange[1];
-    
+
     let passesCategory = true;
     if (selectedCategory) {
       passesCategory = book.category === selectedCategory;
@@ -106,9 +107,9 @@ const Shop = () => {
         passesCategory = book.subcategory === selectedSubcategory;
       }
     }
-    
+
     return passesPrice && passesCategory;
-  });
+  }) : [];
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredBooks.length / productsPerPage);
@@ -129,12 +130,30 @@ const Shop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 5 }}>
+        <Typography variant="h6" color="error">
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ py: 4 }}>
       <Container maxWidth="lg">
         {/* Breadcrumbs */}
-        <Breadcrumbs 
-          separator={<NavigateNextIcon fontSize="small" />} 
+        <Breadcrumbs
+          separator={<NavigateNextIcon fontSize="small" />}
           aria-label="breadcrumb"
           sx={{ mb: 4 }}
         >
@@ -148,7 +167,7 @@ const Shop = () => {
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
           {/* Left Sidebar - Filter */}
           <Box sx={{ width: { xs: '100%', md: 280 }, flexShrink: 0 }}>
-            <FilterAside 
+            <FilterAside
               onPriceRangeChange={handlePriceRangeChange}
               onCategoryChange={handleCategoryChange}
             />
@@ -157,9 +176,9 @@ const Shop = () => {
           {/* Right Side - Products */}
           <Box sx={{ flexGrow: 1 }}>
             {/* Results count and sorting */}
-            <Box 
-              sx={{ 
-                display: 'flex', 
+            <Box
+              sx={{
+                display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 mb: 3
@@ -179,7 +198,7 @@ const Shop = () => {
                     onChange={handleSortChange}
                     displayEmpty
                     variant="outlined"
-                    sx={{ 
+                    sx={{
                       '& .MuiOutlinedInput-notchedOutline': {
                         borderColor: '#e0e0e0'
                       }
@@ -188,6 +207,7 @@ const Shop = () => {
                     <MenuItem value="newest">Newest</MenuItem>
                     <MenuItem value="price-low">Price: Low to High</MenuItem>
                     <MenuItem value="price-high">Price: High to Low</MenuItem>
+                    <MenuItem value="popularity">Popularity</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
@@ -207,9 +227,10 @@ const Shop = () => {
                 }
               }}
             >
-              {displayedBooks.map((book) => (
-                <Box key={book.id}>
-                  <Card book={book} />
+              {console.log(displayedBooks)}
+              {displayedBooks.map((book, i) => (
+                <Box key={book._id}>
+                  <Card key={i} Books={book} />
                 </Box>
               ))}
             </Box>
@@ -226,10 +247,10 @@ const Shop = () => {
             {/* Pagination */}
             {totalPages > 1 && (
               <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
-                <Pagination 
-                  count={totalPages} 
-                  page={page} 
-                  onChange={handlePageChange} 
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={handlePageChange}
                   color="primary"
                   shape="rounded"
                   sx={{

@@ -1,80 +1,75 @@
-import React, { useState } from 'react'
-import { Box, Container, Typography, Button, Stack } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import { Box, Container, Typography, Button, Stack, CircularProgress } from '@mui/material'
 import Card from './Card'
-import { Link } from 'react-router-dom'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom';
 
 const NewRelaseBooks = () => {
-  const [activeSlide, setActiveSlide] = useState(0)
-  
-  // Sample book data
-  const books = [
-    [
-      {
-        id: 1,
-        title: 'Simple Way Of Piece Life',
-        author: 'Armor Ramsey',
-        price: 40.00,
-        image: 'https://book-point.com/wp-content/uploads/2025/04/9f5e2ed510376b4ddea2a18d60847fd5.png',
-        link: '/books/1'
-      },
-        {
-            id: 2,
-            title: 'Great Travel At Desert',
-            author: 'Sanchit Howdy',
-            price: 38.00,
-            image: 'https://book-point.com/wp-content/uploads/2025/04/099271dbbbce72533736ec080b297d43.png',
-            link: '/books/2'
-        },
-      {
-        id: 3,
-        title: 'The Lady Beauty Scarlett',
-        author: 'Arthur Doyle',
-        price: 45.00,
-        image: 'https://book-point.com/wp-content/uploads/2025/04/d37fc337aa70001b9cad2357e1c5499d.png',
-        link: '/books/3'
-      },
-    ],
-    // Add more slides as needed
-    [
-      {
-        id: 4,
-        title: 'Once Upon A Time',
-        author: 'Klien Marry',
-        price: 35.00,
-        image: 'https://book-point.com/wp-content/uploads/2025/04/c167e031376c1d23c71b405bf566a74c.png',
-        link: '/books/4'
-      },
-      {
-        id: 5,
-        title: 'The Art of Coding',
-        author: 'Jane Smith',
-        price: 42.00,
-        image: 'https://book-point.com/wp-content/uploads/2025/04/abadc1b87f0a2bd940f7b9006edce905.png',
-        link: '/books/5'
-      },
-      {
-        id: 6,
-        title: 'Modern Architecture',
-        author: 'Frank Lloyd',
-        price: 47.00,
-        image: 'https://book-point.com/wp-content/uploads/2025/04/9f5e2ed510376b4ddea2a18d60847fd5.png',
-        link: '/books/6'
-      },
-    ]
-  ]
+  const navigate = useNavigate();
+
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  console.log(books)
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:8080/api/v1/Books/ResentBooks');
+        if (response.data && Array.isArray(response.data.data)) {
+          setBooks(response.data.data);
+        } else {
+          setBooks([]);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching books:', error);
+        setError('Failed to fetch books. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, []);
 
   // Filter out empty slides
-  const nonEmptySlides = books.filter(slide => slide.length > 0)
+  const nonEmptySlides = books.filter(book => book && Object.keys(book).length > 0);
+  console.log(nonEmptySlides)
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ textAlign: 'center', color: 'error.main', py: 4 }}>
+        <Typography variant="h6">{error}</Typography>
+      </Box>
+    );
+  }
+
+  if (nonEmptySlides.length === 0) {
+    return (
+      <Box sx={{ textAlign: 'center', py: 4 }}>
+        <Typography variant="h6">No books available at the moment.</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ py: 8, borderTop: '1px solid #eee', borderBottom: '1px solid #eee' }}>
       <Container maxWidth="lg">
         {/* Section Title */}
         <Box sx={{ textAlign: 'center', mb: 5 }}>
-          <Typography 
-            variant="subtitle1" 
-            sx={{ 
+          <Typography
+            variant="subtitle1"
+            sx={{
               color: '#6c757d',
               mb: 1,
               textTransform: 'uppercase',
@@ -83,7 +78,7 @@ const NewRelaseBooks = () => {
           >
             SOME QUALITY ITEMS
           </Typography>
-          
+
           <Typography
             variant="h3"
             component="h2"
@@ -96,7 +91,7 @@ const NewRelaseBooks = () => {
             New Release Books
           </Typography>
         </Box>
-        
+
         {/* Books Grid - Using CSS Grid with 3 equal columns */}
         <Box
           sx={{
@@ -111,48 +106,21 @@ const NewRelaseBooks = () => {
             }
           }}
         >
-          {nonEmptySlides[activeSlide]?.map((book) => (
-            <Box key={book.id}>
-              <Card book={book} />
-            </Box>
+          {nonEmptySlides.map((book) => (
+            <Card key={book._id} Books={book} />
           ))}
         </Box>
+
         
-        {/* Pagination Dots - Only show if there are multiple slides */}
-        {nonEmptySlides.length > 1 && (
-          <Stack 
-            direction="row" 
-            spacing={1} 
-            justifyContent="center" 
-            sx={{ mt: 5 }}
-          >
-            {nonEmptySlides.map((_, index) => (
-              <Box
-                key={index}
-                onClick={() => setActiveSlide(index)}
-                sx={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: '50%',
-                  bgcolor: activeSlide === index ? '#f05545' : '#e0e0e0',
-                  border: activeSlide === index ? '2px solid #f05545' : 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-              />
-            ))}
-          </Stack>
-        )}
-        
+
         {/* View All Link */}
         <Box sx={{ textAlign: 'right', mt: 2 }}>
           <Button
-            component={Link}
-            to="/products"
+            onClick={() => navigate('/books')}
             endIcon={<ArrowForwardIcon />}
             sx={{
               color: '#f05545',
-              '&:hover': {
+              '&:hover': {  
                 bgcolor: 'transparent',
                 color: '#d03b2d'
               }

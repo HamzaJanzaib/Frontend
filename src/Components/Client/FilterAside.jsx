@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { Box, Typography, List, ListItem, ListItemText, Slider, Button, Divider } from '@mui/material'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
+import { useNavigate } from 'react-router-dom'
 
 const FilterAside = ({ onPriceRangeChange, onCategoryChange }) => {
-  // State for price range
+  const navigate = useNavigate()
   const [priceRange, setPriceRange] = useState([200, 2000])
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [selectedSubcategory, setSelectedSubcategory] = useState(null)
@@ -11,38 +12,30 @@ const FilterAside = ({ onPriceRangeChange, onCategoryChange }) => {
   // Categories data
   const categories = [
     {
-      name: 'ACADEMIC & EDUCATION',
-      count: 44,
+      name: 'commic',
+      count: 10,
       color: '#0A3556',
-      subcategories: [
-        { name: 'ACCA', count: 35 },
-        { name: 'Children\'s Books', count: 9 }
-      ]
     },
     {
       name: 'Computer & Technology',
       count: 148,
-      subcategories: [
-        { name: 'Programming', count: 148 }
-      ]
     },
     {
-      name: 'FICTION',
+      name: 'non-fiction',
       count: 24,
-      subcategories: [
-        { name: 'Fiction Books', count: 18 },
-        { name: 'Young Adults', count: 6 }
-      ]
     },
     {
-      name: 'NON-FICTION',
-      count: 155,
-      subcategories: [
-        { name: 'Business & Finance', count: 130 },
-        { name: 'Non-Fiction books', count: 25 }
-      ]
+      name: 'Romance',
+      count: 24,
     },
-    { name: 'Uncategorized', count: 63 }
+    {
+      name: 'Litrature',
+      count: 24,
+    },  
+    {
+      name: 'un-categorized',
+      count: 155,
+    },
   ]
 
   // Handle price range change
@@ -56,10 +49,12 @@ const FilterAside = ({ onPriceRangeChange, onCategoryChange }) => {
       setSelectedCategory(null)
       setSelectedSubcategory(null)
       onCategoryChange && onCategoryChange(null, null)
+      navigate('/shop')
     } else {
       setSelectedCategory(category.name)
       setSelectedSubcategory(null)
       onCategoryChange && onCategoryChange(category.name, null)
+      navigate(`/Category/${category.name}`)
     }
   }
 
@@ -69,9 +64,11 @@ const FilterAside = ({ onPriceRangeChange, onCategoryChange }) => {
     if (selectedSubcategory === subcategory.name) {
       setSelectedSubcategory(null)
       onCategoryChange && onCategoryChange(selectedCategory, null)
+      navigate(`/Category/${categoryName}`)
     } else {
       setSelectedSubcategory(subcategory.name)
       onCategoryChange && onCategoryChange(categoryName, subcategory.name)
+      navigate(`/Category/${categoryName}/${subcategory.name}`)
     }
   }
 

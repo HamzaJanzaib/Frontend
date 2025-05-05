@@ -1,27 +1,37 @@
-import React, { useState } from 'react'
-import { Box, Container, Typography, Button, Rating, Breadcrumbs, Link, Chip, Stack, Divider } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import { Box, Container, Typography, Button, Breadcrumbs, Link, CircularProgress } from '@mui/material'
 import { Link as RouterLink, useParams } from 'react-router-dom'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import axios from 'axios'
 
 const BookDetails = () => {
   const { id } = useParams()
   const [quantity, setQuantity] = useState(1)
+  const [book, setBook] = useState(null)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock book data - in a real app, you would fetch this based on the ID
-  const book = {
-    id: 1,
-    title: 'Think',
-    subtitle: 'and Grow Rich',
-    author: 'Napoleon Hill',
-    price: 10.00,
-    discount: 60, // percentage
-    rating: 4,
-    reviewCount: 1,
-    description: 'Dicta sunt explicabo. Nemo enim ipsam voluptatem voluptas sit odit aut fugit, sed quia consequuntur. Lorem ipsum dolor. Aquia sit amet, elitr, sed diam nonum eirmod tempor invidunt labore et dolore magna aliquyam.erat, sed diam voluptua. At vero accusam et justo duo dolores et ea rebum. Stet clitain vidunt ut labore eirmod tempor invidunt magna aliquyam.',
-    image: '/book.png', // Replace with your actual image path
-    categories: ['Sports', 'Strategy']
-  }
+  useEffect(() => {
+    const fetchBook = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:8080/api/v1/Books/GetSingleBook/${id}`);
+        if (response.data && response.data.data) {
+          setBook(response.data.data);
+        } else {
+          setError('Book data not found');
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching book:', error);
+        setError('Failed to fetch book. Please try again later.');
+        setLoading(false);
+      }
+    };
+
+    fetchBook();
+  }, [id]);
 
   const handleQuantityChange = (amount) => {
     const newQuantity = quantity + amount
@@ -29,13 +39,47 @@ const BookDetails = () => {
       setQuantity(newQuantity)
     }
   }
+  const handleAddToCart = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    console.log('Added to cart:', book._id)
+  }
+
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ py: 4 }}>
+        <Container maxWidth="lg">
+          <Typography color="error">{error}</Typography>
+        </Container>
+      </Box>
+    );
+  }
+
+  if (!book) {
+    return (
+      <Box sx={{ py: 4 }}>
+        <Container maxWidth="lg">
+          <Typography>Book not found</Typography>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ py: 4 }}>
       <Container maxWidth="lg">
         {/* Breadcrumbs */}
-        <Breadcrumbs 
-          separator={<NavigateNextIcon fontSize="small" />} 
+        <Breadcrumbs
+          separator={<NavigateNextIcon fontSize="small" />}
           aria-label="breadcrumb"
           sx={{ mb: 4 }}
         >
@@ -45,18 +89,18 @@ const BookDetails = () => {
           <Link component={RouterLink} to="/books" color="inherit">
             Books
           </Link>
-          <Typography color="text.primary">{book.title}</Typography>
+          <Typography color="text.primary">{book.Title}</Typography>
         </Breadcrumbs>
 
         {/* Main content */}
-        <Box sx={{ 
-          display: 'flex', 
+        <Box sx={{
+          display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
           gap: 4,
           mb: 6
         }}>
           {/* Left side - Book image */}
-          <Box sx={{ 
+          <Box sx={{
             width: { xs: '100%', md: '40%' },
             position: 'relative'
           }}>
@@ -64,8 +108,8 @@ const BookDetails = () => {
               <Box
                 sx={{
                   position: 'absolute',
-                  top: 50,
-                  left: 20,
+                  top: 64,
+                  left: 24,
                   bgcolor: '#0A3556',
                   color: 'white',
                   fontWeight: 'bold',
@@ -75,7 +119,7 @@ const BookDetails = () => {
                   zIndex: 1
                 }}
               >
-                {book.discount}%
+                -{Math.round(((book.price - book.discount) / book.price) * 100)}%
               </Box>
             )}
             <Box
@@ -92,8 +136,8 @@ const BookDetails = () => {
             >
               <Box
                 component="img"
-                src={book.image}
-                alt={book.title}
+                src={book.images[0]}
+                alt={book.Title}
                 sx={{
                   maxWidth: '100%',
                   maxHeight: '100%',
@@ -104,43 +148,38 @@ const BookDetails = () => {
           </Box>
 
           {/* Right side - Book details */}
-          <Box sx={{ 
+          <Box sx={{
             width: { xs: '100%', md: '60%' },
             display: 'flex',
             flexDirection: 'column'
           }}>
-            <Typography 
-              variant="h4" 
+            <Typography
+              variant="h4"
               component="h1"
-              sx={{ 
+              sx={{
                 fontWeight: 700,
                 mb: 1,
                 color: '#0A3556'
               }}
             >
-              {book.title}
+              {book.Title}
             </Typography>
 
-            {/* Ratings */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Rating 
-                value={book.rating} 
-                readOnly 
-                precision={0.5}
-                sx={{ 
-                  color: '#FFA41C',
-                  mr: 1
-                }}
-              />
-              <Typography variant="body2" color="text.secondary">
-                {book.reviewCount} Review{book.reviewCount !== 1 ? 's' : ''}
-              </Typography>
-            </Box>
+            {/* Author */}
+            <Typography
+              variant="subtitle1"
+              sx={{
+                color: '#666',
+                mb: 2
+              }}
+            >
+              Language: {book.Language}
+            </Typography>
 
             {/* Description */}
-            <Typography 
-              variant="body1" 
-              sx={{ 
+            <Typography
+              variant="body1"
+              sx={{
                 color: '#666',
                 mb: 3,
                 lineHeight: 1.7
@@ -149,36 +188,61 @@ const BookDetails = () => {
               {book.description}
             </Typography>
 
+            {/* Stock */}
+            <Typography
+              variant="body2"
+              sx={{
+                color: book.stock > 0 ? 'green' : 'red',
+                fontWeight: 600,
+                mb: 1
+              }}
+            >
+              {book.stock > 0 ? `In Stock (${book.stock} available)` : 'Out of Stock'}
+            </Typography>
+
             {/* Price */}
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                color: '#0A3556c',
+            <Typography
+              variant="h5"
+              sx={{
+                color: '#0A3556',
                 fontWeight: 600,
                 mb: 3
               }}
             >
-              ${book.price.toFixed(2)}
+              ${book.discount.toFixed(2)}
+              {book.discount > 0 && (
+                <Typography
+                  variant="subtitle2"
+                  component="span"
+                  sx={{
+                    color: '#666',
+                    textDecoration: 'line-through',
+                    ml: 1
+                  }}
+                >
+                  ${book.price.toFixed(2)}
+                </Typography>
+              )}
             </Typography>
 
             {/* Add to cart section */}
-            <Box sx={{ 
+            <Box sx={{
               display: 'flex',
               alignItems: 'center',
               gap: 2,
               mb: 3
             }}>
               {/* Quantity selector */}
-              <Box sx={{ 
+              <Box sx={{
                 display: 'flex',
                 alignItems: 'center',
                 border: '1px solid #e0e0e0',
                 borderRadius: '4px',
                 overflow: 'hidden'
               }}>
-                <Button 
+                <Button
                   onClick={() => handleQuantityChange(-1)}
-                  sx={{ 
+                  sx={{
                     minWidth: '40px',
                     bgcolor: '#f5f5f5',
                     borderRadius: 0,
@@ -189,7 +253,7 @@ const BookDetails = () => {
                 >
                   -
                 </Button>
-                <Box sx={{ 
+                <Box sx={{
                   px: 2,
                   py: 1,
                   minWidth: '40px',
@@ -197,9 +261,9 @@ const BookDetails = () => {
                 }}>
                   {quantity}
                 </Box>
-                <Button 
+                <Button
                   onClick={() => handleQuantityChange(1)}
-                  sx={{ 
+                  sx={{
                     minWidth: '40px',
                     bgcolor: '#f5f5f5',
                     borderRadius: 0,
@@ -216,6 +280,7 @@ const BookDetails = () => {
               <Button
                 variant="contained"
                 startIcon={<ShoppingCartIcon />}
+                onClick={handleAddToCart}
                 sx={{
                   bgcolor: '#0A3556',
                   '&:hover': {
@@ -234,35 +299,32 @@ const BookDetails = () => {
 
             {/* Categories */}
             <Box sx={{ mt: 2 }}>
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 component="span"
-                sx={{ 
+                sx={{
                   color: '#666',
                   mr: 1
                 }}
               >
                 Categories:
               </Typography>
-              {book.categories.map((category, index) => (
-                <React.Fragment key={index}>
-                  <Link 
-                    component={RouterLink} 
-                    to={`/category/${category.toLowerCase()}`}
-                    sx={{ 
-                      color: '#0A3556',
-                      textDecoration: 'none',
-                      '&:hover': {
-                        textDecoration: 'underline'
-                      },
-                      mr: 1
-                    }}
-                  >
-                    {category}
-                  </Link>
-                  {index < book.categories.length - 1 && ', '}
-                </React.Fragment>
-              ))}
+              {book.category && (
+                <Link
+                  component={RouterLink}
+                  to={`/category/${book.category}`}
+                  sx={{
+                    color: '#0A3556',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      textDecoration: 'underline'
+                    },
+                    mr: 1
+                  }}
+                >
+                  {book.category}
+                </Link>
+              )}
             </Box>
           </Box>
         </Box>
