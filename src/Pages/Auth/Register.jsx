@@ -1,189 +1,207 @@
-import React, { useState } from 'react'
-import { 
-  Box, 
-  Container, 
-  TextField, 
-  Button, 
-  Typography, 
-  InputAdornment, 
-  IconButton, 
-  Paper, 
-  Stack 
-} from '@mui/material'
-// import { Visibility, VisibilityOff } from '@mui/icons-material'
-import { Link } from 'react-router-dom'
+import React, { useState } from 'react';
+import { Box, TextField, Button, Typography, Paper, Checkbox, FormControlLabel, Link } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const Login = () => {
-  const [showPassword, setShowPassword] = useState(false)
+const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     email: '',
-    password: ''
-  })
+    password: '',
+    confirmPassword: '',
+  });
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const [Loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData({
-      ...formData,
-      [name]: value
-    })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear error on input change
+  };
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword)
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    console.log('Login attempt with:', formData)
-    // Add your authentication logic here
-  }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email || !formData.username || !formData.confirmPassword || !formData.password) {
+      setError('Please fill in all fields');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.username.length <= 4) {
+      setError('Username must be greater than 4 characters');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    const Data = {
+      name: formData.username,
+      email: formData.email,
+      password: formData.password
+    }
+    try {
+      setLoading(true);
+      const response = await axios.post(`http://localhost:8080/api/v1/auth/register`, Data);
+      if (response.data.success === true) {
+        setLoading(false);
+        alert(response.data.message);
+        navigate("/login")
+      }
+      if (response.data.success === false) {
+        setLoading(false);
+        alert(response.data.error);
+      }
+    } catch (error) {
+      console.error('Error fetching book:', error);
+      setError('Failed to fetch book. Please try again later.');
+      setLoading(false);
+    }
+
+
+  };
 
   return (
-    <Box sx={{ 
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      background: 'transparent'
-    }}>
-      <Container maxWidth="lg">
-        <Stack 
-          direction={{ xs: 'column', md: 'row' }}
-          sx={{ minHeight: '80vh' }}
-        >
-          {/* Left side - Login Form */}
-          <Box 
-            component={Paper} 
-            elevation={6} 
-            sx={{ 
-              p: 4,
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center'
-            }}
-          >
-            <Box
-              sx={{
-                my: 8,
-                mx: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-              }}
-            >
-              <Typography component="h1" variant="h4" sx={{ mb: 6, fontWeight: 'bold', color: '#333' , maxWidth: '100px' }}>
-                <img src="/logo.png" alt="Logo" />
-              </Typography>
-              
-              <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="Name"
-                  label="Name"
-                  name="name"
-                  autoComplete="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  variant="standard"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton edge="end">
-                          <Box component="span" sx={{ fontSize: 18, color: '#aaa' }}>
-                            👤
-                          </Box>
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email"
-                  name="email"
-                  autoComplete="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  variant="standard"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton edge="end">
-                          <Box component="span" sx={{ fontSize: 18, color: '#aaa' }}>
-                            👤
-                          </Box>
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  autoComplete="current-password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  variant="standard"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          aria-label="toggle password visibility"
-                          onClick={handleClickShowPassword}
-                          edge="end"
-                        >
-                          {/* {showPassword ? <VisibilityOff /> : <Visibility />} */}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  sx={{ 
-                    mt: 5, 
-                    mb: 2, 
-                    py: 1.5,
-                    backgroundColor: '#2E3B55',
-                    '&:hover': {
-                      backgroundColor: '#1c2538',
-                    }
-                  }}
-                >
-                  REGISTER
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-          
-          {/* Right side - Image */}
-          <Box 
-            sx={{
-              flex: 1,
-              backgroundImage: 'url(https://source.unsplash.com/random?laptop,workspace)',
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              display: { xs: 'none', md: 'block' }
-            }}
-          />
-        </Stack>
-      </Container>
-    </Box>
-  )
-}
+    <Box sx={{ display: 'flex', height: '100vh' }}>
+      {/* Left Side Video */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          height: '80%', // Set height to 90%
+          marginTop: "5%"
+        }}
+      >
+        <img src="/Register.png" alt="" style={{ maxWidth: '100%', maxHeight: '100%' }} />
+      </Box>
+      {/* Right Side Form */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 4,
+        }}
+      >
+        {/* Logo */}
+        <img src="/logo.png" alt="Logo" style={{ width: '150px', marginBottom: '2rem' }} />
 
-export default Login
+        {/* Form */}
+        <Paper elevation={3} sx={{ padding: 4, width: '100%', maxWidth: 400 }}>
+          <Typography variant="h5" gutterBottom>
+            Register
+          </Typography>
+          <Typography variant="body2" color="textSecondary" gutterBottom>
+            Let’s get you all set up so you can access your personal account.
+          </Typography>
+
+          <form onSubmit={handleSubmit}>
+            {/* Username */}
+            <TextField
+              label="Username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+
+            {/* Email */}
+            <TextField
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+
+            {/* Password */}
+            <TextField
+              label="Password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+
+            {/* Confirm Password */}
+            <TextField
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+
+            {/* Error Message */}
+            {error && (
+              <Typography color="error" variant="body2" sx={{ marginTop: 1 }}>
+                {error}
+              </Typography>
+            )}
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ marginTop: 2, padding: 1 }}
+            >
+              {
+                Loading ? <>
+                  Loading...</> :
+                  <>
+                    Create account
+                  </>
+              }
+            </Button>
+          </form>
+
+          {/* Already have an account */}
+          <Typography variant="body2" sx={{ marginTop: 2, textAlign: 'center' }}>
+            Already have an account?{' '}
+            <Link
+              onClick={() => navigate('/login')}
+              underline="hover"
+              sx={{ cursor: 'pointer', color: 'primary.main' }}
+            >
+              Login
+            </Link>
+          </Typography>
+        </Paper>
+      </Box>
+    </Box>
+  );
+};
+
+export default Register;

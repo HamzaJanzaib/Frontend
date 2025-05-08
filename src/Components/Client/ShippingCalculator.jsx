@@ -1,13 +1,16 @@
 import React, { useState } from 'react'
-import { Box, Typography, TextField, Button, Select, MenuItem, FormControl, InputLabel } from '@mui/material'
+import { Box, Typography, TextField, Button, Select, MenuItem, FormControl } from '@mui/material'
 
 const ShippingCalculator = () => {
   const [country, setCountry] = useState('')
   const [state, setState] = useState('')
   const [zipCode, setZipCode] = useState('')
+  const [Address, setAddress] = useState('')
+
+  const CompleteAddress = `${Address} | ${country} | ${state} | ${zipCode}`
+  console.log(CompleteAddress)
 
   const handleCalculate = () => {
-    // Implement shipping calculation logic here
     console.log('Calculating shipping for:', { country, state, zipCode })
   }
 
@@ -16,14 +19,14 @@ const ShippingCalculator = () => {
       <Typography variant="h6" fontWeight="600" sx={{ mb: 2 }}>
         Calculated Shipping
       </Typography>
-      
+
       <FormControl fullWidth sx={{ mb: 2 }}>
         <Select
           value={country}
           onChange={(e) => setCountry(e.target.value)}
           displayEmpty
           renderValue={country !== '' ? undefined : () => "Country"}
-          sx={{ 
+          sx={{
             bgcolor: '#f5f5f5',
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: 'transparent'
@@ -36,13 +39,29 @@ const ShippingCalculator = () => {
             }
           }}
         >
-          <MenuItem value="US">United States</MenuItem>
-          <MenuItem value="CA">Canada</MenuItem>
-          <MenuItem value="UK">United Kingdom</MenuItem>
-          <MenuItem value="AU">Australia</MenuItem>
+          <MenuItem value="PK">Pakistan</MenuItem>
+          <MenuItem value="IN">India</MenuItem>
         </Select>
       </FormControl>
-      
+      <TextField
+        placeholder="Enter Your Address"
+        fullWidth
+        value={Address}
+        onChange={(e) => setAddress(e.target.value)}
+        sx={{
+          mb: 2,
+          bgcolor: '#f5f5f5',
+          '& .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent'
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent'
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'transparent'
+          }
+        }}
+      />
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <FormControl sx={{ flex: 1 }}>
           <Select
@@ -50,7 +69,7 @@ const ShippingCalculator = () => {
             onChange={(e) => setState(e.target.value)}
             displayEmpty
             renderValue={state !== '' ? undefined : () => "State / City"}
-            sx={{ 
+            sx={{
               bgcolor: '#f5f5f5',
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent'
@@ -63,18 +82,19 @@ const ShippingCalculator = () => {
               }
             }}
           >
-            <MenuItem value="NY">New York</MenuItem>
-            <MenuItem value="CA">California</MenuItem>
-            <MenuItem value="TX">Texas</MenuItem>
-            <MenuItem value="FL">Florida</MenuItem>
+            <MenuItem value="Karachi">Karachi</MenuItem>
+            <MenuItem value="Lahore">Lahore</MenuItem>
+            <MenuItem value="Islamabad">Islamabad</MenuItem>
+            <MenuItem value="Multa">Multa</MenuItem>
+            <MenuItem value="Rawalpandi">Rawalpandi</MenuItem>
           </Select>
         </FormControl>
-        
+
         <TextField
           placeholder="ZIP Code"
           value={zipCode}
           onChange={(e) => setZipCode(e.target.value)}
-          sx={{ 
+          sx={{
             flex: 1,
             bgcolor: '#f5f5f5',
             '& .MuiOutlinedInput-notchedOutline': {
@@ -89,12 +109,12 @@ const ShippingCalculator = () => {
           }}
         />
       </Box>
-      
+
       <Button
         variant="contained"
         fullWidth
         onClick={handleCalculate}
-        sx={{ 
+        sx={{
           bgcolor: '#000',
           color: '#fff',
           py: 1.5,

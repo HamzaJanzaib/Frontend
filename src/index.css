@@ -3,3 +3,26 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+#root{
+  margin: 0;
+  padding: 0;
+}
+
+a{
+  text-decoration: none;
+  color: #0A3556;
+}
+  /* Custom scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #0A3556;
+    height: 20%; /* Modified thumb height */
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+  }

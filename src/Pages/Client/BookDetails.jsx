@@ -3,14 +3,21 @@ import { Box, Container, Typography, Button, Breadcrumbs, Link, CircularProgress
 import { Link as RouterLink, useParams } from 'react-router-dom'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import axios from 'axios'
+import { useSelector } from 'react-redux'
 
 const BookDetails = () => {
+  const headers = {
+    Authorization: `Bearer ${localStorage.getItem('token')} `,
+  };
   const { id } = useParams()
   const [quantity, setQuantity] = useState(1)
   const [book, setBook] = useState(null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const IsLoggedIn = useSelector((state) => state.auth.isLoggedIn)
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -39,10 +46,39 @@ const BookDetails = () => {
       setQuantity(newQuantity)
     }
   }
-  const handleAddToCart = (e) => {
+  const handleAddToCart = async (e) => {
     e.preventDefault()
     e.stopPropagation()
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/api/v1/user/AddCart/${book._id}`,
+        {},
+        { headers }
+      );
+      console.log(response.data.message);
+      alert(response.data.message);
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+      alert("alerady add into cart");
+    }
     console.log('Added to cart:', book._id)
+  }
+  const handleAddToFavorite = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/api/v1/user/addFavorite/${book._id}`,
+        {},
+        { headers }
+      );
+      console.log(response.data.message);
+      alert(response.data.message);
+    } catch (error) {
+      console.error('Error adding to favorites:', error);
+      alert("alerady add into cart");
+
+    }
   }
 
 
@@ -281,6 +317,7 @@ const BookDetails = () => {
                 variant="contained"
                 startIcon={<ShoppingCartIcon />}
                 onClick={handleAddToCart}
+                disabled={!IsLoggedIn}
                 sx={{
                   bgcolor: '#0A3556',
                   '&:hover': {
@@ -294,6 +331,26 @@ const BookDetails = () => {
                 }}
               >
                 Add To Cart
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleAddToFavorite}
+                disabled={!IsLoggedIn}
+                sx={{
+                  bgcolor: '#0A3556',
+                  '&:hover': {
+                    bgcolor: '#0A3556'
+                  },
+                  textTransform: 'none',
+                  display: "flex",
+                  fontWeight: 600,
+                  borderRadius: "50%",
+                  height: "60px",
+                  alignItems: "center",
+                  justifyContent: "center"
+                }}
+              >
+                <FavoriteBorderIcon />
               </Button>
             </Box>
 
