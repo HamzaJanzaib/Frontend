@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom'
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined'
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined'
 import LocalOfferIcon from '@mui/icons-material/LocalOffer'
+import { useDispatch } from 'react-redux'
+import { CartActions } from '../../Store/Cart'
 
 const Card = ({ Books }) => {
- 
+  const dispatch = useDispatch()
   // Use provided book or default
   const { _id, Title, price, images, Language, discount  } = Books 
 
@@ -14,8 +16,13 @@ const Card = ({ Books }) => {
   const handleAddToCart = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    console.log('Added to cart:', _id)
-    // Add your cart logic here
+    dispatch(CartActions.addToCart({
+      _id,
+      title: Title,
+      price: discount > 0 ? discount : price,
+      image: images[0],
+      quantity: 1
+    }))
   }
 
   // Handle add to favorites
