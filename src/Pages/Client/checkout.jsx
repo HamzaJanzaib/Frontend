@@ -57,7 +57,6 @@ const Checkout = () => {
   const total = subtotal + shipping + tax;
 
   // State for shipping and payment methods
-  const [shippingMethod, setShippingMethod] = useState('regular');
   const [paymentMethod, setPaymentMethod] = useState('visa');
 
   return (
@@ -160,58 +159,7 @@ const Checkout = () => {
             </Box>
             
             {/* Shipping Method */}
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                Select Shipping Method
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button 
-                  variant={shippingMethod === 'same-day' ? 'contained' : 'outlined'}
-                  onClick={() => setShippingMethod('same-day')}
-                  sx={{ 
-                    borderColor: 'black', 
-                    color: shippingMethod === 'same-day' ? 'white' : 'black',
-                    bgcolor: shippingMethod === 'same-day' ? 'black' : 'transparent',
-                    '&:hover': {
-                      bgcolor: shippingMethod === 'same-day' ? 'black' : 'rgba(0,0,0,0.04)',
-                      borderColor: 'black'
-                    }
-                  }}
-                >
-                  SAME DAY
-                </Button>
-                <Button 
-                  variant={shippingMethod === 'next-day' ? 'contained' : 'outlined'}
-                  onClick={() => setShippingMethod('next-day')}
-                  sx={{ 
-                    borderColor: 'black', 
-                    color: shippingMethod === 'next-day' ? 'white' : 'black',
-                    bgcolor: shippingMethod === 'next-day' ? 'black' : 'transparent',
-                    '&:hover': {
-                      bgcolor: shippingMethod === 'next-day' ? 'black' : 'rgba(0,0,0,0.04)',
-                      borderColor: 'black'
-                    }
-                  }}
-                >
-                  NEXT DAY
-                </Button>
-                <Button 
-                  variant={shippingMethod === 'regular' ? 'contained' : 'outlined'}
-                  onClick={() => setShippingMethod('regular')}
-                  sx={{ 
-                    borderColor: 'black', 
-                    color: shippingMethod === 'regular' ? 'white' : 'black',
-                    bgcolor: shippingMethod === 'regular' ? 'black' : 'transparent',
-                    '&:hover': {
-                      bgcolor: shippingMethod === 'regular' ? 'black' : 'rgba(0,0,0,0.04)',
-                      borderColor: 'black'
-                    }
-                  }}
-                >
-                  REGULAR
-                </Button>
-              </Box>
-            </Box>
+           
             
             {/* Payment Method */}
             <Box sx={{ mb: 2 }}>
@@ -248,6 +196,21 @@ const Checkout = () => {
                   }}
                 >
                   PAYPAL
+                </Button>
+                <Button 
+                  variant={paymentMethod === 'COD' ? 'contained' : 'outlined'}
+                  onClick={() => setPaymentMethod('COD')}
+                  sx={{ 
+                    borderColor: 'black', 
+                    color: paymentMethod === 'COD' ? 'white' : 'black',
+                    bgcolor: paymentMethod === 'COD' ? 'black' : 'transparent',
+                    '&:hover': {
+                      bgcolor: paymentMethod === 'COD' ? 'black' : 'rgba(0,0,0,0.04)',
+                      borderColor: 'black'
+                    }
+                  }}
+                >
+                  COD
                 </Button>
               </Box>
             </Box>

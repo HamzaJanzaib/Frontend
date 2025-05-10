@@ -160,44 +160,6 @@ const CartDrawer = ({ open, onClose }) => {
             </Box>
           ))}
           
-          {/* Gift wrapping option */}
-          <FormControlLabel
-            control={<Checkbox size="small" />}
-            label={
-              <Typography variant="body2">
-                For $1.00, please wrap the products in this order.
-              </Typography>
-            }
-            sx={{ mb: 2 }}
-          />
-          
-          {/* Order notes and shipping estimate */}
-          <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-            <Button 
-              startIcon={<DescriptionOutlinedIcon />}
-              variant="text"
-              sx={{ 
-                color: '#000',
-                textTransform: 'none',
-                fontWeight: 500,
-                fontSize: '0.875rem'
-              }}
-            >
-              Order note
-            </Button>
-            <Button 
-              startIcon={<AccessTimeOutlinedIcon />}
-              variant="text"
-              sx={{ 
-                color: '#000',
-                textTransform: 'none',
-                fontWeight: 500,
-                fontSize: '0.875rem'
-              }}
-            >
-              Estimate Shipping
-            </Button>
-          </Stack>
         </Box>
         
         {/* Total and checkout */}
